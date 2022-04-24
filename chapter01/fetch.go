@@ -22,6 +22,7 @@ func main() {
 
 		if err != nil {
 			fmt.Printf("fetch %s read err:%v", url, err)
+			os.Exit(1)
 		}
 
 		fmt.Println(string(b))
