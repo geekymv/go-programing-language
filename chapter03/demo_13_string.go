@@ -21,7 +21,7 @@ func main() {
 	fmt.Println("s2[2]", s2[2])  // 231 'ç'
 
 	// 程
-	fmt.Println(string([]byte{s2[2], s2[3], s2[4]}))
+	fmt.Println(s2[2:5])
 
 	// 字符串不可变，字符串是不可变的字节序列
 
