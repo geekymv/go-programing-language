@@ -32,4 +32,12 @@ func main() {
 		\r\n world`
 	fmt.Println("s3:", s3)
 
+	s4 := "知"
+
+	fmt.Println([]byte(s4))
+
+	for _, b := range []byte(s4) {
+		fmt.Println(fmt.Sprintf("%08b", b))
+	}
+
 }
