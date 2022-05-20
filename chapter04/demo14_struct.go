@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 type Point struct {
 	X int
 	Y int
@@ -16,6 +14,7 @@ func IncrAge2(u *User) {
 	u.Age += 1
 }
 
+/*
 func main() {
 
 	p := Point{1, 2}
@@ -40,3 +39,4 @@ func main() {
 	fmt.Printf("%#v\n", u)
 
 }
+*/
