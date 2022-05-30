@@ -9,7 +9,7 @@ func close(i int) {
 func main() {
 
 	fmt.Println("main start")
-	// defer 最后执行，一般用户释放资源
+	// defer 最后执行，一般用于释放资源
 	// 多个defer 倒序执行
 	defer close(1)
 	defer close(2)
