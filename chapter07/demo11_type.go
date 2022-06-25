@@ -11,7 +11,7 @@ func main() {
 
 	var w io.Writer
 	w = os.Stdout
-
+	// 类型断言是一个作用在接口值上的操作，其中 x 是一个接口类型的表达式
 	// x.(T) 如果 T 是具体类型，检查 x 的动态类型是否就是T
 	f := w.(*os.File)
 	fmt.Printf("%T\n", f)
