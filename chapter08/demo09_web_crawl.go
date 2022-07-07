@@ -26,7 +26,7 @@ func crawl(url string) []string {
 
 func main() {
 	worklist := make(chan []string)
-	// n 记录 channel 中元素个数，解决 deaklock 问题
+	// n 记录 channel 中元素个数，解决 deadlock 问题
 	var n int
 
 	n++
