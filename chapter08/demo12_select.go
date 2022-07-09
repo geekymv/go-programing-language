@@ -17,6 +17,7 @@ func main() {
 
 	tick := time.Tick(1 * time.Second)
 	for count := 10; count > 0; count-- {
+		// select 在多个 channel 上 多路复用
 		select {
 		case <-tick:
 			fmt.Println(count)
