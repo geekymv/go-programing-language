@@ -1,3 +1,3 @@
 module go-programing-language
 
-go 1.14
+go 1.16
