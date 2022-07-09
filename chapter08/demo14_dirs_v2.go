@@ -35,6 +35,8 @@ func printDiskUsageV2(nfiles, nbytes int64) {
 	fmt.Printf("%d files %.1fMB\n", nfiles, float64(nbytes)/(1024*1024))
 }
 
+var verbose = flag.Bool("v", false, "show process")
+
 func main() {
 	flag.Parse()
 	roots := flag.Args()
@@ -52,9 +54,13 @@ func main() {
 
 	var nfiles, nbytes int64
 
-	tick := time.Tick(100 * time.Millisecond)
+	var tick <-chan time.Time
+	if *verbose {
+		tick = time.Tick(2 * time.Millisecond)
+	}
 	for {
 		select {
+		// select 不会选择值为 nil 的 channel
 		case <-tick:
 			printDiskUsageV2(nfiles, nbytes)
 		case size, ok := <-fileSizes:
@@ -69,5 +75,6 @@ func main() {
 	}
 
 print:
+	// 计算最终总数
 	printDiskUsageV2(nfiles, nbytes)
 }

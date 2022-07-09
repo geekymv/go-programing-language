@@ -40,6 +40,8 @@ func printDiskUsageV3(nfiles, nbytes int64) {
 }
 
 func main() {
+	v := flag.Bool("v", false, "show process")
+
 	flag.Parse()
 	roots := flag.Args()
 	if len(roots) == 0 {
@@ -51,7 +53,7 @@ func main() {
 	var wg sync.WaitGroup
 	for _, root := range roots {
 		wg.Add(1)
-		// 并发读取每个目录
+		// 并发读取每个目录下的文件
 		go walkDirV3(root, &wg, fileSizes)
 	}
 	go func() {
@@ -61,7 +63,11 @@ func main() {
 
 	var nfiles, nbytes int64
 
-	tick := time.Tick(100 * time.Millisecond)
+	var tick <-chan time.Time
+	if *v {
+		tick = time.Tick(2 * time.Millisecond)
+	}
+
 	for {
 		select {
 		case <-tick:
