@@ -8,6 +8,8 @@ import (
 
 var done = make(chan int)
 
+// 广播机制：不在 channel 上发送值，而是直接关闭它。
+
 func cancelled() bool {
 	select {
 	case v := <-done: // 从已经关闭的channel中读取数据，读取完之后不会阻塞，获取到零值
