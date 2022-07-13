@@ -48,8 +48,8 @@ func handleConnV2(conn net.Conn) {
 
 	// 获取客户端连接地址信息
 	who := conn.RemoteAddr().String()
-	// 将客户端链接地址发送消息通道
-	//clientChan <- "I am " + who
+	// 将客户端链接地址发送消息通道（服务端返回客户端的连接信息）
+	clientChan <- "server send:" + who
 
 	// 发送消息
 	messages <- who + " has arrived"
