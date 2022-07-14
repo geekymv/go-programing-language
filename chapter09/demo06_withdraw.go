@@ -23,11 +23,12 @@ func BalanceV5() int {
 	return balanceV5
 }
 
-// 	取款操作
+// 	取款操作（不是原子操作）
 func WithDrawV5(amount int) int {
 	if BalanceV5() < amount {
 		return balanceV5
 	}
+	// 模拟业务逻辑操作
 	time.Sleep(10 * time.Millisecond)
 	DepositV5(-amount)
 	return balanceV5

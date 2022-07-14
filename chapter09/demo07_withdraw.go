@@ -24,9 +24,11 @@ func BalanceV6() int {
 }
 
 func WithDrawV6(amount int) int {
+	// sync.Mutex 不可重入锁
 	muV6.Lock()
 	defer muV6.Unlock()
 
+	// BalanceV6 再次获取锁，会发生 deadlock
 	if BalanceV6() < amount {
 		return balanceV6
 	}
@@ -38,7 +40,7 @@ func WithDrawV6(amount int) int {
 func main() {
 	balanceV6 = 10
 	var wg sync.WaitGroup
-	for i := 1; i <= 100; i++ {
+	for i := 1; i <= 1; i++ {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()

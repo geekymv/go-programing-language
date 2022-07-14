@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	// 互斥量本身和被保护对象都没有导出
 	muV7      sync.Mutex
 	balanceV7 int
 )
@@ -23,18 +24,21 @@ func BalanceV7() int {
 	return balanceV7
 }
 
+// 封装一个不可导出函数，供其他函数调用，没有添加锁
 func depositV7(amount int) {
 	balanceV7 += amount
 }
 
 func WithDrawV7(amount int) int {
+	// 只获取一次锁
 	muV7.Lock()
 	defer muV7.Unlock()
 
 	if balanceV7 < amount {
 		return balanceV7
 	}
-	time.Sleep(10 * time.Millisecond)
+
+	time.Sleep(100 * time.Millisecond)
 	depositV7(-amount)
 	return balanceV7
 }

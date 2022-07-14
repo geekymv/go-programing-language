@@ -6,12 +6,16 @@ import (
 )
 
 var (
+	// sync.Mutex 零值可用，默认是无锁，不可重入锁
+	// 类似 Java ReentrantLock 可重入锁（可以再次获取锁）
 	muV4      sync.Mutex
 	balanceV4 int
 )
 
 func DepositV4(amount int) {
+	// 获取锁，获取不到锁，会等待
 	muV4.Lock()
+	// 释放锁
 	defer muV4.Unlock()
 	balanceV4 += amount
 }

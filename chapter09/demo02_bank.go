@@ -7,10 +7,13 @@ import (
 
 var balanceV1 int
 
+// 存款
 func DepositV1(amount int) {
+	// 不是原子操作
 	balanceV1 = balanceV1 + amount
 }
 
+// 查询余额
 func BalanceV1() int {
 	return balanceV1
 }

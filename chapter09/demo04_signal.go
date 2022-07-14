@@ -6,12 +6,15 @@ import (
 )
 
 var (
+	// 信号量
 	signal    = make(chan struct{}, 1)
 	balanceV3 int
 )
 
 func DepositV3(amount int) {
+	// 获取token
 	signal <- struct{}{}
+	// 释放token
 	defer func() {
 		<-signal
 	}()
