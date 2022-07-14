@@ -5,14 +5,14 @@ import (
 	"sync"
 )
 
-var balance int
+var balanceV1 int
 
-func Deposit(amount int) {
-	balance = balance + amount
+func DepositV1(amount int) {
+	balanceV1 = balanceV1 + amount
 }
 
-func Balance() int {
-	return balance
+func BalanceV1() int {
+	return balanceV1
 }
 
 func main() {
@@ -24,11 +24,11 @@ func main() {
 
 		go func(i int) {
 			defer wg.Done()
-			Deposit(i)
+			DepositV1(i)
 		}(i)
 	}
 	wg.Wait()
 
-	fmt.Println("balance=", Balance())
+	fmt.Println("balance=", BalanceV1())
 
 }

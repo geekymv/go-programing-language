@@ -6,19 +6,19 @@ import (
 )
 
 var (
-	mu        sync.Mutex
+	muV4      sync.Mutex
 	balanceV4 int
 )
 
 func DepositV4(amount int) {
-	mu.Lock()
-	defer mu.Unlock()
+	muV4.Lock()
+	defer muV4.Unlock()
 	balanceV4 += amount
 }
 
 func BalanceV4() int {
-	mu.Lock()
-	defer mu.Unlock()
+	muV4.Lock()
+	defer muV4.Unlock()
 	return balanceV4
 }
 
