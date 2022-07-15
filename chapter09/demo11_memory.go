@@ -1,5 +1,10 @@
 package main
 
+import (
+	"image"
+	"sync"
+)
+
 // CPU缓存
 
 // 指令重排序，CPU 和编译器优化指令执行次序。
@@ -18,3 +23,32 @@ icons = make(map[string]image.Image)
 3.在内存 M 上初始化 map 对象
 
 */
+
+var rw sync.RWMutex
+var icons map[string]image.Image
+
+func Icon(name string) image.Image {
+	// 获取读锁（共享锁）
+	rw.RLock()
+	if icons != nil {
+		icon := icons[name]
+		rw.RUnlock()
+		return icon
+	}
+	// 释放读锁
+	rw.RUnlock()
+
+	rw.Lock()
+	defer rw.Unlock()
+
+	if icons == nil {
+		loadIcons()
+	}
+	return icons[name]
+}
+
+func loadIcons() {
+	icons = map[string]image.Image{
+		// TODO
+	}
+}
