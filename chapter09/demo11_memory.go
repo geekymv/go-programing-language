@@ -5,11 +5,15 @@ import (
 	"sync"
 )
 
+// 通道通信 、互斥锁 都会导致处理器把本地缓存中的数据刷回内存并提交。
+// 可见性、有序性
+// 互斥锁保证可见性和有序（可以防止指令重排序）
+
 // CPU缓存
 
 // 指令重排序，CPU 和编译器优化指令执行次序。
 
-// make 不是原子操作
+// make 不是原子操作，包含多个步骤
 /*
 icons = make(map[string]image.Image)
 
@@ -42,6 +46,7 @@ func Icon(name string) image.Image {
 	defer rw.Unlock()
 
 	if icons == nil {
+		// loadIcons 延迟加载，只需要加载一次
 		loadIcons()
 	}
 	return icons[name]

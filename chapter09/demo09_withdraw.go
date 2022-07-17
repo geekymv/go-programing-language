@@ -21,7 +21,7 @@ func DepositV8(amount int) {
 }
 
 func BalanceV8() int {
-	// 读锁可以并发执行
+	// 读锁可以并发执行（共享锁）
 	muV8.RLock()
 	defer muV8.RUnlock()
 	return balanceV8
