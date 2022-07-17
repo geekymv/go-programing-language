@@ -31,7 +31,7 @@ func Put(key int64, value string) string {
 	// g1 执行完，释放锁，g2获取到锁，继续执行
 	defer mu.Unlock()
 
-	// 获取到锁，需要再次判断key是否存在（判断条件释放满足）
+	// 获取到锁，需要再次判断key是否存在（判断条件是否满足）
 	v, ok = cache[key]
 	if ok {
 		return v
