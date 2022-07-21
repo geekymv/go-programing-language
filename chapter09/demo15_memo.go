@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-func httpGetBody(url string) (interface{}, error) {
+func httpGetBodyV2(url string) (interface{}, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -20,27 +20,30 @@ func httpGetBody(url string) (interface{}, error) {
 }
 
 // Func 函数类型
-type Func func(key string) (interface{}, error)
+type FuncV2 func(key string) (interface{}, error)
 
-type result struct {
+type resultV2 struct {
 	value interface{}
 	err   error
 }
 
 // Memo 缓存调用 Func 的结果
-type Memo struct {
-	f     Func
-	cache map[string]result
+type MemoV2 struct {
+	f     FuncV2
+	mu    sync.Mutex // 保护cache
+	cache map[string]resultV2
 }
 
-func New(f Func) *Memo {
-	return &Memo{
+func NewV2(f FuncV2) *MemoV2 {
+	return &MemoV2{
 		f:     f,
-		cache: make(map[string]result),
+		cache: make(map[string]resultV2),
 	}
 }
 
-func (m *Memo) Get(url string) (interface{}, error) {
+func (m *MemoV2) GetV2(url string) (interface{}, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	res, ok := m.cache[url]
 	if !ok {
 		// 没有缓存，调用函数 Func
@@ -59,7 +62,7 @@ func main() {
 		"https://www.baidu.com",
 	}
 
-	memo := New(httpGetBody)
+	memo := NewV2(httpGetBodyV2)
 
 	var wg sync.WaitGroup
 	for _, url := range urls {
@@ -67,7 +70,7 @@ func main() {
 		go func(url string) {
 			defer wg.Done()
 			start := time.Now()
-			val, err := memo.Get(url)
+			val, err := memo.GetV2(url)
 			if err != nil {
 				log.Println(err)
 				return
