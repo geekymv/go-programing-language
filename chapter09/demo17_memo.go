@@ -10,6 +10,7 @@ import (
 )
 
 func httpGetBodyV4(url string) (interface{}, error) {
+	fmt.Println("http get ", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -78,8 +79,10 @@ func (m *MemoV4) GetV4(url string) (interface{}, error) {
 
 // 只有一个 goroutine 操作 server
 func (m *MemoV4) server(f FuncV4) {
+	// 只有一个 goroutine 访问 map
 	cache := make(map[string]*entryV4)
 
+	fmt.Println("for start")
 	for req := range m.requests {
 		e := cache[req.url]
 		if e == nil {
@@ -91,11 +94,7 @@ func (m *MemoV4) server(f FuncV4) {
 		}
 		go e.deliver(req.response)
 	}
-
-}
-
-func (m *MemoV4) Close() {
-	close(m.requests)
+	fmt.Println("for end")
 }
 
 func main() {
@@ -103,7 +102,7 @@ func main() {
 	urls := []string{
 		"https://www.baidu.com",
 		"https://www.baidu.com",
-		"https://www.baidu.com",
+		"https://www.hao123.com",
 		"https://www.baidu.com",
 	}
 
