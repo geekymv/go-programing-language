@@ -10,6 +10,7 @@ import (
 )
 
 func httpGetBody(url string) (interface{}, error) {
+	fmt.Println("url=", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -40,11 +41,14 @@ func New(f Func) *Memo {
 	}
 }
 
+// Get 先从缓存中取，如果获取不到，则调用 Func 函数，发起请求，最后缓存结果
 func (m *Memo) Get(url string) (interface{}, error) {
 	res, ok := m.cache[url]
 	if !ok {
+		// 想要实现的效果是：同样的 url 只会访问一次
 		// 没有缓存，调用函数 Func
 		res.value, res.err = m.f(url)
+		// concurrent map writes
 		m.cache[url] = res
 	}
 	return res.value, res.err
@@ -53,6 +57,11 @@ func (m *Memo) Get(url string) (interface{}, error) {
 func main() {
 
 	urls := []string{
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
 		"https://www.baidu.com",
 		"https://www.baidu.com",
 		"https://www.baidu.com",
@@ -67,7 +76,9 @@ func main() {
 		go func(url string) {
 			defer wg.Done()
 			start := time.Now()
+
 			val, err := memo.Get(url)
+
 			if err != nil {
 				log.Println(err)
 				return
