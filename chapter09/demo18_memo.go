@@ -30,7 +30,7 @@ type resultV5 struct {
 
 type entryV5 struct {
 	res   resultV5
-	ready chan struct{} // res 准备好后，channel 会关闭
+	ready chan struct{} // 表示 res 准备好后，channel 会关闭
 }
 
 func (e *entryV5) call(f FuncV5, url string) {
@@ -43,6 +43,7 @@ func (e *entryV5) call(f FuncV5, url string) {
 func (e *entryV5) deliver(response chan<- resultV5) {
 	// 等待数据读取完毕
 	<-e.ready
+	// 将请求响应的数据发送给 response channel
 	response <- e.res
 }
 
@@ -61,11 +62,14 @@ func NewV5(f FuncV5) *MemoV5 {
 	m := &MemoV5{
 		requests: make(chan request),
 	}
+	// 开启一个 goroutine
 	go m.server(f)
 	return m
 }
 
+// GetV5 只用 channel 实现一个并发非阻塞缓存
 func (m *MemoV5) GetV5(url string) (interface{}, error) {
+	// 无缓冲 channel
 	response := make(chan resultV5)
 	// 封装请求，并将请求发送给 channel
 	m.requests <- request{
@@ -83,15 +87,19 @@ func (m *MemoV5) server(f FuncV5) {
 	cache := make(map[string]*entryV5)
 
 	fmt.Println("for start")
+	// 遍历 requests channel
 	for req := range m.requests {
 		e := cache[req.url]
 		if e == nil {
 			e = &entryV5{
 				ready: make(chan struct{}),
 			}
+			// 只有一个 goroutine 写 map
 			cache[req.url] = e
+			// 开启一个 goroutine 执行 Func
 			go e.call(f, req.url)
 		}
+		// 开启一个 goroutine 获取响应
 		go e.deliver(req.response)
 	}
 	fmt.Println("for end")
