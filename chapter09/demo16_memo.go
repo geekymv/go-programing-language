@@ -10,6 +10,7 @@ import (
 )
 
 func httpGetBodyV3(url string) (interface{}, error) {
+	log.Println("url=", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -28,7 +29,8 @@ type resultV3 struct {
 }
 
 type entry struct {
-	res   resultV3
+	res resultV3
+	// ready channel 用于通知 result 已经准备好
 	ready chan struct{} // res 准备好后，channel 会关闭
 }
 
@@ -46,6 +48,7 @@ func NewV3(f FuncV3) *MemoV3 {
 	}
 }
 
+// GetV3 Lock + channel
 func (m *MemoV3) GetV3(url string) (interface{}, error) {
 	// 排他锁
 	m.mu.Lock()
@@ -57,6 +60,7 @@ func (m *MemoV3) GetV3(url string) (interface{}, error) {
 		}
 		// 没有准备好数据 res 的 entry
 		m.cache[url] = e
+		// 锁的粒度变小
 		m.mu.Unlock()
 
 		// 发起请求，读取数据
@@ -66,8 +70,9 @@ func (m *MemoV3) GetV3(url string) (interface{}, error) {
 		close(e.ready)
 
 	} else {
+		// 只有一个goroutine 会执行 Func ，其他 goroutine 都在这里等待
 		m.mu.Unlock()
-		// 等待数据读取完毕
+		// goroutine 阻塞，等待数据读取完毕
 		<-e.ready
 	}
 	return e.res.value, e.res.err
@@ -76,6 +81,10 @@ func (m *MemoV3) GetV3(url string) (interface{}, error) {
 func main() {
 
 	urls := []string{
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
 		"https://www.baidu.com",
 		"https://www.baidu.com",
 		"https://www.baidu.com",

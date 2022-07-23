@@ -10,7 +10,7 @@ import (
 )
 
 func httpGetBodyV4(url string) (interface{}, error) {
-	fmt.Println("http get ", url)
+	log.Println("url=", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -33,68 +33,54 @@ type entryV4 struct {
 	ready chan struct{} // res 准备好后，channel 会关闭
 }
 
-func (e *entryV4) call(f FuncV4, url string) {
-	// 发起请求，读取数据
-	e.res.value, e.res.err = f(url)
-	// 关闭 channel，广播
-	close(e.ready)
-}
-
-func (e *entryV4) deliver(response chan<- resultV4) {
-	// 等待数据读取完毕
-	<-e.ready
-	response <- e.res
-}
-
-// 封装了请求URL和响应
-type request struct {
-	url      string
-	response chan<- resultV4
-}
-
+// Memo 缓存调用 Func 的结果
 type MemoV4 struct {
-	// 接受请求的 channel
-	requests chan request
+	f     FuncV4
+	mu    sync.RWMutex // 保护cache
+	cache map[string]*entryV4
 }
 
 func NewV4(f FuncV4) *MemoV4 {
-	m := &MemoV4{
-		requests: make(chan request),
+	return &MemoV4{
+		f:     f,
+		cache: make(map[string]*entryV4),
 	}
-	go m.server(f)
-	return m
 }
 
+// GetV4 RWLock + channel
 func (m *MemoV4) GetV4(url string) (interface{}, error) {
-	response := make(chan resultV4)
-	// 封装请求，并将请求发送给 channel
-	m.requests <- request{
-		url:      url,
-		response: response,
-	}
-	// 阻塞等待结果
-	res := <-response
-	return res.value, res.err
-}
-
-// 只有一个 goroutine 操作 server
-func (m *MemoV4) server(f FuncV4) {
-	// 只有一个 goroutine 访问 map
-	cache := make(map[string]*entryV4)
-
-	fmt.Println("for start")
-	for req := range m.requests {
-		e := cache[req.url]
-		if e == nil {
-			e = &entryV4{
-				ready: make(chan struct{}),
-			}
-			cache[req.url] = e
-			go e.call(f, req.url)
+	// 共享锁，可以并发读
+	m.mu.RLock()
+	e := m.cache[url]
+	m.mu.RUnlock()
+	if e == nil {
+		// 排他锁
+		m.mu.Lock()
+		// double check
+		e = m.cache[url]
+		if e != nil {
+			<-e.ready
 		}
-		go e.deliver(req.response)
+
+		// e 是 entry 指针
+		e = &entryV4{
+			ready: make(chan struct{}),
+		}
+		// 没有准备好数据 res 的 entry
+		m.cache[url] = e
+		m.mu.Unlock()
+
+		// 发起请求，读取数据
+		e.res.value, e.res.err = m.f(url)
+
+		// 关闭 channel，广播
+		close(e.ready)
+
+	} else {
+		// 等待数据读取完毕
+		<-e.ready
 	}
-	fmt.Println("for end")
+	return e.res.value, e.res.err
 }
 
 func main() {
@@ -102,7 +88,12 @@ func main() {
 	urls := []string{
 		"https://www.baidu.com",
 		"https://www.baidu.com",
-		"https://www.hao123.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
 		"https://www.baidu.com",
 	}
 
