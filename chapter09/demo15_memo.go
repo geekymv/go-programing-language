@@ -10,6 +10,7 @@ import (
 )
 
 func httpGetBodyV2(url string) (interface{}, error) {
+	log.Println("url=", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -30,7 +31,7 @@ type resultV2 struct {
 // Memo 缓存调用 Func 的结果
 type MemoV2 struct {
 	f     FuncV2
-	mu    sync.Mutex // 保护cache
+	mu    sync.RWMutex // 保护cache
 	cache map[string]resultV2
 }
 
@@ -42,13 +43,23 @@ func NewV2(f FuncV2) *MemoV2 {
 }
 
 func (m *MemoV2) GetV2(url string) (interface{}, error) {
-	m.mu.Lock()
-	defer m.mu.Unlock()
+	// 共享锁
+	m.mu.RLock()
 	res, ok := m.cache[url]
+	m.mu.RUnlock()
 	if !ok {
-		// 没有缓存，调用函数 Func
-		res.value, res.err = m.f(url)
-		m.cache[url] = res
+		log.Println("before lock")
+		// 互斥锁
+		m.mu.Lock()
+		// double check
+		res, ok = m.cache[url]
+		if !ok {
+			// 只有一个 goroutine 调用 Func
+			// 没有缓存，调用函数 Func
+			res.value, res.err = m.f(url)
+			m.cache[url] = res
+		}
+		m.mu.Unlock()
 	}
 	return res.value, res.err
 }
@@ -56,6 +67,12 @@ func (m *MemoV2) GetV2(url string) (interface{}, error) {
 func main() {
 
 	urls := []string{
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
+		"https://www.baidu.com",
 		"https://www.baidu.com",
 		"https://www.baidu.com",
 		"https://www.baidu.com",
