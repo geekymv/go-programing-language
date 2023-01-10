@@ -11,7 +11,7 @@ func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	for i := 0; i < 10; i++ {
-		fmt.Println(rand.Intn(10))
+		fmt.Println(rand.Intn(2))
 	}
 
 }
