@@ -2,6 +2,7 @@ package main
 
 import "fmt"
 
+// 长度表示切片可用元素个数
 func main() {
 
 	// len = cap = 3
