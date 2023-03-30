@@ -62,3 +62,50 @@ func TestSlice(t *testing.T) {
 	}
 
 }
+
+func TestChangeVarValue(t *testing.T) {
+	greeting := "hello"
+	gVal := reflect.ValueOf(greeting)
+	fmt.Println(gVal.Interface())
+
+	// 修改变量值
+	gpVal := reflect.ValueOf(&greeting)
+	gpVal.Elem().SetString("goodbye")
+	fmt.Println(greeting)
+}
+
+func TestChangeStructValue(t *testing.T) {
+	f := Foo{
+		Name: "tom",
+		Age:  18,
+	}
+	fVal := reflect.ValueOf(&f)
+	// 修改结构体属性值
+	fVal.Elem().Field(0).SetString("jack")
+	//fVal.Elem().Field(0).Set(reflect.ValueOf("jack2"))
+	fVal.Elem().Field(1).SetInt(20)
+
+	fmt.Printf("%+v\n", f)
+	fmt.Printf("%s\n", f.Name)
+	fmt.Printf("%d\n", f.Age)
+}
+
+// 新创建一个结构体
+func TestNewStruct(t *testing.T) {
+	f := Foo{
+		Name: "tom",
+		Age:  18,
+	}
+
+	fType := reflect.TypeOf(f)
+	// 创建一个新的 Value
+	fVal := reflect.New(fType)
+
+	fVal.Elem().Field(0).SetString("jack")
+	fVal.Elem().Field(1).SetInt(20)
+
+	f2 := fVal.Elem().Interface().(Foo)
+	fmt.Printf("%+v\n", f2)
+	fmt.Printf("%s\n", f2.Name)
+	fmt.Printf("%d\n", f2.Age)
+}
