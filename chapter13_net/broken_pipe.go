@@ -10,6 +10,14 @@ import (
 )
 
 // https://gosamples.dev/broken-pipe/
+/**
+sudo tcpdump -i any -s 0 -B 524288 port 9090 -w ~/Desktop/DumpFile01.pcap
+
+-i interface
+-B buffer size (unit Kib)
+-s snaplen
+https://hackertarget.com/tcpdump-examples/
+*/
 func server() {
 	listener, err := net.Listen("tcp", ":9090")
 	if err != nil {
@@ -52,7 +60,7 @@ func client() {
 
 	time.Sleep(1 * time.Second)
 
-	// 服务端已经返回 RST 包，再发送数据就会报错 write: broken pipe
+	// 已经收到了服务端已经返回 RST 包，再发送数据就会报错 write: broken pipe
 	log.Println("write to generate the broken pipe error")
 	if _, err := conn.Write([]byte("c")); err != nil {
 		log.Printf("client: %v", err)
