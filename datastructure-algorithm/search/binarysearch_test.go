@@ -13,4 +13,7 @@ func TestBinarySearch(t *testing.T) {
 
 	i = BinarySearch(a, 20)
 	assert.Equal(t, -1, i)
+
+	i = BinarySearch(a, 35)
+	assert.Equal(t, 5, i)
 }
